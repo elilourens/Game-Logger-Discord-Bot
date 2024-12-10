@@ -1,9 +1,7 @@
 const { REST, Routes, ApplicationCommandOptionType } = require('discord.js');
 require('dotenv').config();
 
-
 const clientID = "1314384494580469832";
-const guildID = "871685165477408829";
 
 const commands = [
     {
@@ -14,51 +12,48 @@ const commands = [
                 name: 'in-game-name',
                 description: 'Your account name.',
                 type: ApplicationCommandOptionType.String,
+                required: true,
             },
             {
                 name: 'tagline',
                 description: 'Your account tagline. (characters after the #)',
                 type: ApplicationCommandOptionType.String,
+                required: true,
             },
             {
                 name: 'region',
                 description: 'Your account region',
                 type: ApplicationCommandOptionType.String,
                 choices: [
-                    {
-                        name: 'Europe',
-                        value: 'europe'
-                    },
-                    {
-                        name: 'Asia',
-                        value: 'asia'
-                    },
-                    {
-                        name: 'Americas',
-                        value: 'americas'
-                    }
-                ]
+                    { name: 'Europe', value: 'europe' },
+                    { name: 'Asia', value: 'asia' },
+                    { name: 'Americas', value: 'americas' }
+                ],
+                required: true,
             }
         ]
     },
     {
         name: 'help',
-        description: 'add syntax: remove syntax:',
+        description: 'Provides command usage information.',
+    },
+    {
+        name: 'getplayerlist',
+        description: 'Shows players being logged.',
     },
 ];
 
-const rest = new REST({version: '10'}).setToken(process.env.DISCORD_TOKEN);
+const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
     try {
-        console.log('Registering slash commands...');
+        console.log('Registering global slash commands...');
         await rest.put(
-            Routes.applicationGuildCommands(clientID,guildID),
+            Routes.applicationCommands(clientID), // Global registration
             { body: commands }
-        )
-        console.log("slash commands registered.")
+        );
+        console.log('Global slash commands registered successfully.');
     } catch (error) {
-        console.log(`Error with command: ${error}`);
+        console.error(`Error registering commands: ${error}`);
     }
 })();
-
