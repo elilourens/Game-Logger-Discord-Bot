@@ -28,8 +28,8 @@ async function getPuuidByGameName(gameName, tagLine, region) {
                 'Origin': 'https://developer.riotgames.com'
             }
         });
-        console.log(response.data);
-        return response.data; 
+        console.log('puuid:' + response.data.puuid);
+        return response.data.puuid; 
         
     } catch (error) {
         console.error('Failed to fetch account data:', error.response ? error.response.data : error.message);

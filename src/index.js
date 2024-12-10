@@ -23,12 +23,39 @@ client.on('messageCreate', (message) => {
 
 })
 
-client.on('interactionCreate', (interaction) => {
+client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
-    if (interaction.commandName === 'add'){
-        
+
+    if (interaction.commandName === 'add') {
+        try {
+            const accountName = interaction.options.getString('in-game-name');
+            const tagline = interaction.options.getString('tagline');
+            const region = interaction.options.getString('region');
+
+            console.log(
+                `Account Name: ${accountName}, Tagline: ${tagline}, Region: ${region}`
+            );
+
+            // Use await if getPuuidByGameName is async
+            const puuid = await getPuuidByGameName(accountName, tagline, region);
+
+            db.insertPlayer(accountName, puuid, region, tagline, (err, success) => {
+                if (err) {
+                    console.error(err.message);
+                    return interaction.reply('Failed to add the player. Please try again.');
+                }
+                if (success) {
+                    interaction.reply('Player added successfully.');
+                } else {
+                    interaction.reply('Player already exists.');
+                }
+            });
+        } catch (error) {
+            console.error(error.message);
+            interaction.reply('An error occurred while processing your request.');
+        }
     }
-})
+});
 
 client.login(process.env.DISCORD_TOKEN);
 
