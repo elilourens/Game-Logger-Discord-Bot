@@ -7,7 +7,7 @@ const db = new sqlite3.Database('./main.db', (err) => {
     console.log('Connected to the SQLite database successfully.');
 });
 
-//How can I handle people in different servers trying to log people only in their server? 
+
 const sqlCreatePlayersTable = `
 CREATE TABLE IF NOT EXISTS allPlayers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
