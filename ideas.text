@@ -1,0 +1,3 @@
+- Create db tables to store the guilds and channel ids that want the logging to be pasted there.
+- Fetch list of recent games from riot api for logged players. 
+- Parse game info and display it in chat. 
