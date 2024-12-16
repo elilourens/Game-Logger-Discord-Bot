@@ -69,6 +69,25 @@ client.on('interactionCreate', async (interaction) => {
             }
         });
     }
+
+    if(interaction.commandName === 'setloggerchannel'){
+        const channel = interaction.options.getChannel('channel');
+
+        if(!channel || channel.type !== 0){
+            return await interaction.reply({
+                content: "Please mention a valid text channel.",
+                ephemeral: true,
+            });
+        }
+
+        db.setLoggingChannel(guildId,channel.id, (err) => {
+            if(err) {
+                console.error('Error setting a logging channel:', err.message);
+                return interaction.reply('Failed to set the logging channel.');
+            }
+            interaction.reply(`Logging Channel Succeeded. ${channel}`)
+        })
+    }
 });
 
 client.login(process.env.DISCORD_TOKEN);

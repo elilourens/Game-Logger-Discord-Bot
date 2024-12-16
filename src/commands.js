@@ -41,6 +41,18 @@ const commands = [
         name: 'getplayerlist',
         description: 'Shows players being logged.',
     },
+    {
+        name: 'setloggerchannel',
+        description: 'Sets the channel the logger will output to.',
+        options: [
+            {
+                name: 'channel',
+                description: 'Channel where logging will be outputted:',
+                type: ApplicationCommandOptionType.Channel,
+                required: true,
+            }
+        ]
+    },
 ];
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);

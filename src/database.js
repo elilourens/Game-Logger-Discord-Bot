@@ -18,12 +18,47 @@ CREATE TABLE IF NOT EXISTS allPlayers (
     guild_id TEXT NOT NULL
 );`;
 
+const sqlCreateLoggingChannelsTable = `
+CREATE TABLE IF NOT EXISTS loggingChannels (
+    guild_id TEXT PRIMARY KEY,
+    channel_id TEXT NOT NULL
+);`;
+
 db.run(sqlCreatePlayersTable, (err) => {
     if (err) {
         return console.error(err.message);
     }
     console.log('allPlayers Table Created Successfully.');
 });
+
+db.run(sqlCreateLoggingChannelsTable, (err) => {
+    if (err) {
+        return console.error(err.message);
+    }
+    console.log('loggingChannels Table Created Successfully.');
+});
+
+function setLoggingChannel(guildId, channelId, callback) {
+    db.run(
+        'INSERT INTO loggingChannels (guild_id, channel_id) VALUES (?, ?) ON CONFLICT(guild_id) DO UPDATE SET channel_id = ?',
+        [guildId, channelId, channelId],
+        (err) => {
+            if (err) {
+                return callback(err);
+            }
+            callback(null);
+        }
+    );
+}
+
+function getLoggingChannels(callback) {
+    db.all('SELECT * FROM loggingChannels', [], (err, rows) => {
+        if (err) {
+            return callback(err, null);
+        }
+        callback(null, rows);
+    });
+}
 
 function playerExists(puuid, callback) {
     db.get('SELECT puuid FROM allPlayers WHERE puuid = ?', [puuid], (err, row) => {
@@ -74,4 +109,4 @@ function close() {
     db.close();
 }
 
-module.exports = { close, insertPlayer, getAllPlayers };
+module.exports = { close, insertPlayer, getAllPlayers, setLoggingChannel, getLoggingChannels };
