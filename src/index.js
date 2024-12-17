@@ -12,9 +12,49 @@ const client = new Client({
     ],
 });
 
-client.on('ready',(c) => {
-    console.log(`${c.user.username} is now online`)
-})
+client.on('ready', (c) => {
+    console.log(`${c.user.username} is now online`);
+
+    
+    setInterval(() => {
+        db.getLoggingChannels((err, rows) => {
+            if (err) {
+                return console.error('Error fetching logging channels:', err.message);
+            }
+
+            rows.forEach(async (row) => {
+                const channel = client.channels.cache.get(row.channel_id);
+                if (channel) {
+                    try {
+                        const currentGuildId = channel.guild.id; // Extract the guild ID
+
+                        // Fetch players for the current guild ID
+                        const players = await db.getAllPlayers(currentGuildId);
+
+                        if (players.length === 0) {
+                            await channel.send('No players are being logged in this server.');
+                        } else {
+                            const playerList = players
+                                .map(
+                                    (player) =>
+                                        `Username: ${player.username}, Region: ${player.region}, Tagline: ${player.tagline}`
+                                )
+                                .join('\n');
+
+                            // Send the player list to the channel
+                            await channel.send(`Players in this server:\n${playerList}`);
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching or sending player list: ${error.message}`);
+                        await channel.send('An error occurred while fetching the player list.');
+                    }
+                } else {
+                    console.error(`Channel with ID ${row.channel_id} not found.`);
+                }   
+            });
+        });
+    }, 1 * 30 * 1000); 
+});
 
 client.on('messageCreate', (message) => {
     if (message.author.bot){
