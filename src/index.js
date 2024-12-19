@@ -1,6 +1,6 @@
 const {Client, IntentsBitField} = require('discord.js');
 const db = require('./database');
-const { getPuuidByGameName } = require('./api');
+const { getPuuidByGameName, getRecentMatches } = require('./api');
 require('dotenv').config();
 
 const client = new Client({
@@ -34,15 +34,25 @@ client.on('ready', (c) => {
                         if (players.length === 0) {
                             await channel.send('No players are being logged in this server.');
                         } else {
-                            const playerList = players
-                                .map(
-                                    (player) =>
-                                        `Username: ${player.username}, Region: ${player.region}, Tagline: ${player.tagline}`
-                                )
-                                .join('\n');
+                           for (const player of players) {
+                                const puuid = player.puuid;
+                                const region = player.region;
 
-                            // Send the player list to the channel
-                            await channel.send(`Players in this server:\n${playerList}`);
+                                const matchData = await getRecentMatches(puuid, region);
+
+                                if (matchData) {
+                                    // Handle the match data, e.g., display some info
+                                    const matchesInfo = matchData.join(', ');
+                                    await channel.send(`Recent matches for ${player.username}: ${matchesInfo}`);
+                                } else {
+                                    // Inform the channel if no matches were found or if there was an error
+                                    await channel.send(`No recent matches found for ${player.username} or failed to fetch data.`);
+                                }
+                           }
+                                
+
+
+
                         }
                     } catch (error) {
                         console.error(`Error fetching or sending player list: ${error.message}`);
@@ -53,7 +63,7 @@ client.on('ready', (c) => {
                 }   
             });
         });
-    }, 1 * 30 * 1000); 
+    }, 1 * 5 * 1000); 
 });
 
 client.on('messageCreate', (message) => {

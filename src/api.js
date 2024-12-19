@@ -38,8 +38,42 @@ async function getPuuidByGameName(gameName, tagLine, region) {
     
 }
 
+async function getRecentMatches(puuid,region) {
+    const baseURL = baseRiotURLs[region.toLowerCase()];
+
+    if (!baseURL) {
+        console.error('Invalid region specified');
+        return null;
+    }
+
+    const queryParams = {
+        start: 0,
+        count: 20,
+    }
+
+    const queryString = Object.entries(queryParams).map(([key,value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
+    
+    try {
+        const response = await axios.get(`${baseURL}/lol/match/v5/matches/by-puuid/${encodeURIComponent(puuid)}/ids?${queryString}`, {
+            headers: {
+                'X-Riot-Token': API_KEY,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Charset': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'Origin': 'https://developer.riotgames.com'
+            }
+        }) ;
+        console.log("Match IDs:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`Failed to fetch player data for puuid ${puuid}`, error.response ? error.response.data : error.message);
+        return null;
+    }
+
+}
+
 module.exports = {
-    getPuuidByGameName
+    getPuuidByGameName, getRecentMatches,
 };
 
 
