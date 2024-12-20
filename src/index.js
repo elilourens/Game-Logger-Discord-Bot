@@ -1,6 +1,7 @@
 const {Client, IntentsBitField} = require('discord.js');
 const db = require('./database');
-const { getPuuidByGameName, getRecentMatches } = require('./api');
+const { createMatchEmbed } = require('./embed');
+const { getPuuidByGameName, getRecentMatches, getMatchDetails } = require('./api');
 require('dotenv').config();
 
 const client = new Client({
@@ -12,7 +13,22 @@ const client = new Client({
     ],
 });
 
-client.on('ready', (c) => {
+client.on('ready', async (c) => {
+
+
+    
+   
+
+    
+
+    
+
+    
+
+
+
+
+
     console.log(`${c.user.username} is now online`);
 
     
@@ -26,9 +42,7 @@ client.on('ready', (c) => {
                 const channel = client.channels.cache.get(row.channel_id);
                 if (channel) {
                     try {
-                        const currentGuildId = channel.guild.id; // Extract the guild ID
-
-                        // Fetch players for the current guild ID
+                        const currentGuildId = channel.guild.id; 
                         const players = await db.getAllPlayers(currentGuildId);
 
                         if (players.length === 0) {
@@ -39,20 +53,23 @@ client.on('ready', (c) => {
                                 const region = player.region;
 
                                 const matchData = await getRecentMatches(puuid, region);
+                                //const matchData = ['EUW1_7234989799'];
 
-                                if (matchData) {
-                                    // Handle the match data, e.g., display some info
-                                    const matchesInfo = matchData.join(', ');
-                                    await channel.send(`Recent matches for ${player.username}: ${matchesInfo}`);
+
+                                if (matchData.length > 0) {
+                                    console.log(matchData[0]);
+
+
+                                    const matchDetails = await getMatchDetails(region,matchData[0]);
+                                    
+                                    const embed = createMatchEmbed(matchDetails);
+                                    
+                                    console.log(embed);
+                                    await channel.send({ content: `Recent match for ${player.username}`, embeds: [embed] });
                                 } else {
-                                    // Inform the channel if no matches were found or if there was an error
-                                    await channel.send(`No recent matches found for ${player.username} or failed to fetch data.`);
+                                    
                                 }
                            }
-                                
-
-
-
                         }
                     } catch (error) {
                         console.error(`Error fetching or sending player list: ${error.message}`);
@@ -63,7 +80,7 @@ client.on('ready', (c) => {
                 }   
             });
         });
-    }, 1 * 5 * 1000); 
+    }, 2 * 10 * 1000); 
 });
 
 client.on('messageCreate', (message) => {
