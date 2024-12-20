@@ -33,6 +33,7 @@ client.on('ready', async (c) => {
 
     
     setInterval(() => {
+        const loggedMatches = {};
         db.getLoggingChannels((err, rows) => {
             if (err) {
                 return console.error('Error fetching logging channels:', err.message);
@@ -40,6 +41,9 @@ client.on('ready', async (c) => {
 
             rows.forEach(async (row) => {
                 const channel = client.channels.cache.get(row.channel_id);
+                if (!loggedMatches[channel.id]) {
+                    loggedMatches[channel.id] = new Set();
+                }
                 if (channel) {
                     try {
                         const currentGuildId = channel.guild.id; 
@@ -48,24 +52,25 @@ client.on('ready', async (c) => {
                         if (players.length === 0) {
                             await channel.send('No players are being logged in this server.');
                         } else {
+                            
                            for (const player of players) {
                                 const puuid = player.puuid;
                                 const region = player.region;
 
                                 const matchData = await getRecentMatches(puuid, region);
-                                //const matchData = ['EUW1_7234989799'];
+                                
 
 
                                 if (matchData.length > 0) {
                                     console.log(matchData[0]);
-
-
+                                    if(loggedMatches[channel.id].has(matchData[0])){
+                                        continue;
+                                    }
+                                    
                                     const matchDetails = await getMatchDetails(region,matchData[0]);
-                                    
                                     const embed = createMatchEmbed(matchDetails);
-                                    
-                                    console.log(embed);
                                     await channel.send({ content: `Recent match for ${player.username}`, embeds: [embed] });
+                                    loggedMatches[channel.id].add(matchData[0]);
                                 } else {
                                     
                                 }
@@ -80,7 +85,7 @@ client.on('ready', async (c) => {
                 }   
             });
         });
-    }, 2 * 10 * 1000); 
+    }, 2 * 60 * 1000); 
 });
 
 client.on('messageCreate', (message) => {
